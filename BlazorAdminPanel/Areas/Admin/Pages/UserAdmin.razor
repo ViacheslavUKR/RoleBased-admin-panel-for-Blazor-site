@@ -1,0 +1,79 @@
+﻿@page "/Admin/UserAdmin"
+@namespace BlazorAdminPanel.Admin
+@using Data
+@using Microsoft.AspNetCore.Identity
+
+<h3>Users</h3>
+
+<ul>
+    @foreach (IdentityUser OneUser in users)
+    {
+        <li>
+            <img src="images/remove.gif" />
+            <a style="cursor:pointer" @onclick="@(()=>@Toggle(OneUser.Id))">@OneUser.Email</a>
+            <table style="display:@display(OneUser.Id);visibility:@visibility(OneUser.Id)">
+                <tr><td>AccessFailedCount</td><td>@OneUser.AccessFailedCount</td></tr>
+                <tr><td>ConcurrencyStamp</td><td>@OneUser.ConcurrencyStamp</td></tr>
+                <tr><td>Email</td><td>@OneUser.Email</td></tr>
+                <tr><td>EmailConfirmed</td><td>@OneUser.EmailConfirmed</td></tr>
+                <tr><td>Id</td><td>@OneUser.Id</td></tr>
+                <tr><td>LockoutEnabled</td><td>@OneUser.LockoutEnabled</td></tr>
+                <tr><td>LockoutEnd</td><td>@OneUser.LockoutEnd</td></tr>
+                <tr><td>NormalizedEmail</td><td>@OneUser.NormalizedEmail</td></tr>
+                <tr><td>NormalizedUserName</td><td>@OneUser.NormalizedUserName</td></tr>
+                <tr><td>PasswordHash</td><td>@OneUser.PasswordHash</td></tr>
+                <tr><td>PhoneNumber</td><td>@OneUser.PhoneNumber</td></tr>
+                <tr><td>PhoneNumberConfirmed</td><td>@OneUser.PhoneNumberConfirmed</td></tr>
+                <tr><td>SecurityStamp</td><td>@OneUser.SecurityStamp</td></tr>
+                <tr><td>TwoFactorEnabled</td><td>@OneUser.TwoFactorEnabled</td></tr>
+                <tr><td>UserName</td><td>@OneUser.UserName</td></tr>
+            </table>
+        </li>
+    }
+
+</ul>
+
+@code {
+
+    [Inject] AuthenticationStateProvider authenticationStateProvider { get; set; }
+    public static AuthenticationState AuState = null;
+
+    [Inject] UserManager<IdentityUser> userManager { get; set; }
+    [Inject] IJSRuntime JS { get; set; }
+
+    IList<IdentityUser> users;
+    Dictionary<string, Boolean> OpenUsers;
+
+    protected override void OnInitialized()
+    {
+        AuState = authenticationStateProvider.GetAuthenticationStateAsync().Result;
+        if (!AuState.User.IsInRole("Admin")) {
+            throw new Exception("You have no right to access this page");
+        }
+
+        users = userManager.Users.ToList();
+        OpenUsers = new Dictionary<string, Boolean>();
+        foreach (IdentityUser OneUser in users)
+        {
+            OpenUsers.Add(OneUser.Id, false);
+        }
+        base.OnInitialized();
+    }
+
+    protected string display(string UserId)
+    {
+        return OpenUsers[UserId] ? "block" : "none";
+    }
+
+    protected string visibility(string UserId)
+    {
+        return OpenUsers[UserId] ? "visible" : "hidden";
+    }
+
+    private void Toggle(string UserId)
+    {
+        OpenUsers[UserId] = !OpenUsers[UserId];
+        StateHasChanged();
+    }
+}
+

@@ -34,8 +34,20 @@ namespace BlazorAdminPanel
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddDefaultIdentity<IdentityUser>(options =>
+             {
+                 options.Password.RequiredLength = 4;
+                 options.Password.RequireUppercase = false;
+                 options.Password.RequireLowercase = false;
+                 options.Password.RequireUppercase = false;
+                 options.Password.RequireNonAlphanumeric = false;
+                 options.SignIn.RequireConfirmedEmail = true;
+
+             }).AddRoles<IdentityRole>()
+             .AddEntityFrameworkStores<ApplicationDbContext>()
+             .AddDefaultTokenProviders();
+
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
@@ -43,8 +55,10 @@ namespace BlazorAdminPanel
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DbContextOptions<ApplicationDbContext> identityDbContextOptions, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
         {
+            Seed.AddTestUsers(identityDbContextOptions, userManager, roleManager);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -1,0 +1,27 @@
+﻿@inherits LayoutComponentBase
+@namespace BlazorAdminPanel.Admin
+
+<div class="sidebar">
+    <BlazorAdminPanel.Admin.NavMenu />
+</div>
+
+<div class="main">
+    <div class="top-row px-4" style="cursor:pointer">
+        <a @onclick="@ReturnFromAdminPanel" target="_blank">Return to site</a>
+    </div>
+
+    <div class="content px-4">
+        @Body
+    </div>
+</div>
+
+
+@code {
+
+    [Inject] NavigationManager navigationManager { get; set; }
+
+    protected void ReturnFromAdminPanel()
+    {
+        navigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

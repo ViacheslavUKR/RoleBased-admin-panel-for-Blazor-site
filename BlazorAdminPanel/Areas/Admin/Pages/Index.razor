@@ -1,0 +1,20 @@
+﻿@page "/Admin/"
+@namespace BlazorAdminPanel.Admin
+
+<h2>Welcome to Admin panel</h2>
+
+
+@code{
+
+    [Inject] AuthenticationStateProvider authenticationStateProvider { get; set; }
+    public static AuthenticationState AuState = null;
+
+    protected override void OnInitialized()
+    {
+        AuState = authenticationStateProvider.GetAuthenticationStateAsync().Result;
+        if (!AuState.User.IsInRole("Admin"))
+        {
+            throw new Exception("You have no right to access this page");
+        }
+    }
+}
